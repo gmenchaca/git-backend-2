@@ -1,45 +1,51 @@
+# Use php-fpm base
 FROM php:8.3-fpm
 
-# Install required dependencies and PHP extensions
+# prevent interactive apt prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install nginx, php extensions and utilities (single RUN to keep layers small)
 RUN apt-get update && \
-    apt-get install -y \
-    libpng-dev \
-    libjpeg-dev \
-    libfreetype6-dev \
-    libxml2-dev \
-    libzip-dev \
-    zip \
-    unzip \
-    mariadb-client \
+    apt-get install -y --no-install-recommends \
+      nginx \
+      gettext-base \
+      ca-certificates \
+      libpng-dev \
+      libjpeg-dev \
+      libfreetype6-dev \
+      libxml2-dev \
+      libzip-dev \
+      zip \
+      unzip \
+      mariadb-client \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql zip
+    && docker-php-ext-install -j$(nproc) gd pdo pdo_mysql zip \
+    && rm -rf /var/lib/apt/lists/*
 
+# Set working dir and copy app
 WORKDIR /var/www/html
+COPY . /var/www/html
 
-# Copy app code into the container
-COPY . .
-
-# Copy composer
+# Copy composer binary from official composer image
+# (this is allowed: copy single binary from composer image)
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Install PHP dependencies
-RUN composer update
-RUN composer install --no-dev --optimize-autoloader --working-dir=/var/www/html
+# Install PHP deps: prefer install (requires composer.lock present in repo)
+# --no-interaction to avoid prompts
+RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --working-dir=/var/www/html
 
-# Set proper file permissions
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
-    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+# Copy nginx config template and start script
+COPY nginx.conf.template /etc/nginx/nginx.conf.template
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
-# Start PHP-FPM (this is handled by the base image, so no need for `php-fpm` here)
-CMD ["php-fpm"]
+# Ensure proper permissions (adjust as needed)
+RUN chown -R www-data:www-data /var/www/html && \
+    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache || true
 
-# La seccion From usa una imagen php pero con soporte FPM.
-# La seccion Run se encarga de instalar las dependencias y extensiones php
-# El workdir indica el directorio principal de trabajao para la aplicacion
-# La seccion Copy copia el codigo duente al contenedor, usando composer
-# desde una imagen base para gestionar dependencias
-# El primer Run sirve para instalar las dependencias de composer
-# La segunda seccion de RUn habilita los permisos de lectura y escritura
-# la seccion CMD define php-fpm como el proceso principal del contenedor.
+# Expose and set default PORT env
+ENV PORT=8080
+EXPOSE 8080
 
-#Construye la imagen sel servicio app que ejecuta php ára la logica de la aplicacion laravel.
+# Start script will launch php-fpm and nginx
+CMD ["/start.sh"]
