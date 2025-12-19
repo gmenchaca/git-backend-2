@@ -18,7 +18,7 @@ services:
       context: .
       dockerfile: Dockerfile-build-dev
     ports:
-      - '8000:8000'
+      - '8080:8080'
     volumes:
       - .:/var/www/html:cached
       - vendor_vibe:/var/www/html/vendor
