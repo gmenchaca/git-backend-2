@@ -1,0 +1,38 @@
+name: Test Deploy to EC2
+
+on:
+  push:
+    branches: [ "dev" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: SSH and Setup
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            # 1. Navigate to the app directory
+            mkdir -p /home/ubuntu/api
+            cd /home/ubuntu/api
+
+            # 2. Pull the latest code (Assuming you've set up an SSH key on the EC2 for GitHub)
+            if [ -d ".git" ]; then
+              git pull origin dev
+            else
+              git clone -b dev git@github.com:your-username/your-repo.git .
+            fi
+
+            # 3. Clean up old containers to save space on your 24.04 instance
+            docker compose down --remove-orphans
+            docker system prune -f
+
+            # 4. Build and Run
+            # This will use the .env file already present on your EC2
+            docker compose -f docker-compose-dev.yml up -d --build
