@@ -16,7 +16,7 @@ server {
     # Matches the service name in your docker-compose.yml
     location ~ \.php$ {
         include fastcgi_params;
-        fastcgi_pass api-app:9000;
+        fastcgi_pass app:9000; # Change 'api-app' to 'app' to match your docker-compose
         fastcgi_index index.php;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
     }
