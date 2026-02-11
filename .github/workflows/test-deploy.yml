@@ -32,5 +32,5 @@ jobs:
             # Let's recreate a basic one or move it from a safe spot:
             echo "${{ secrets.DOT_ENV_PRODUCTION }}" > .env
 
-            # 4. Build and Run
-            docker compose -f docker-compose-dev.yml up -d --build
+            # 4. Build and Run (Production)
+            docker compose up -d --build

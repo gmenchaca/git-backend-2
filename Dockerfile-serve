@@ -1,11 +1,8 @@
-FROM nginx:latest
-
-# Install envsubst (comes with gettext)
-RUN apt-get update && apt-get install -y gettext-base && rm -rf /var/lib/apt/lists/*
-
-COPY nginx.conf.template /etc/nginx/nginx.conf.template
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
-
-# Use the script to launch
-CMD ["/start.sh"]
+nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile-serve
+    networks:
+      - app-network # <--- This is the bridge between Nginx and Laravel
+    ports:
+      - "80:80"
