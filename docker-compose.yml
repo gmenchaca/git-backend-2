@@ -1,6 +1,6 @@
 version: '3'
 services:
-  app:
+  api-app:
     build:
       context: .
       dockerfile: Dockerfile-app
@@ -8,8 +8,11 @@ services:
       - app-network
     env_file:
       - .env
-
+    image: api-app
+  
   nginx:
+    restart: always
+    image: nginx:latest
     build:
       context: .
       dockerfile: Dockerfile-serve
@@ -19,7 +22,7 @@ services:
       - "80:80"
       - "443:443" # Open HTTPS port
     depends_on:
-      - app
+      - api-app
     networks:
       - app-network
     volumes:
@@ -31,7 +34,3 @@ services:
     volumes:
       - ./certbot/www:/var/www/certbot
       - ./certbot/conf:/etc/letsencrypt
-
-networks:
-  app-network:
-    driver: bridge
