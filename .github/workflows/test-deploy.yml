@@ -18,19 +18,21 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # 1. Prepare directory without losing certs
+            # 1. Ensure directory exists and move into it
             mkdir -p /home/ubuntu/api
             cd /home/ubuntu/api
 
-            # Delete everything EXCEPT the certbot folder
-            # This keeps your SSL keys safe
+            # 2. The "Smart Clean": Delete everything EXCEPT the certbot folder
+            # This prevents the "destination path already exists" error
+            # while keeping your SSL certificates safe.
             find . -maxdepth 1 ! -name 'certbot' ! -name '.' -exec rm -rf {} +
 
-            # 2. Clone fresh
+            # 3. Clone fresh into the current directory
             git clone -b dev https://github.com/gmenchaca/git-backend-2.git .
 
-            # 3. Handle the .env file
+            # 4. Recreate the .env file
             echo "${{ secrets.DOT_ENV_PRODUCTION }}" > .env
 
-            # 4. Build and Run
+            # 5. Build and Run
+            # Using 'sudo' if your EC2 user isn't in the docker group
             docker compose up -d --build
