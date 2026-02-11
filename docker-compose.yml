@@ -1,28 +1,36 @@
 version: '3'
 services:
-
   app:
     build:
       context: .
       dockerfile: Dockerfile-app
     networks:
       - app-network
-    # TIP: Instead of listing all 50 variables, just use this:
     env_file:
       - .env
 
   nginx:
     build:
       context: .
-      dockerfile: Dockerfile-serve # This uses your Nginx + start.sh logic
+      dockerfile: Dockerfile-serve
     environment:
       - PORT=80
     ports:
       - "80:80"
+      - "443:443" # Open HTTPS port
     depends_on:
       - app
-    networks: # <--- CRITICAL: Nginx needs to be on the same network to find 'app'
+    networks:
       - app-network
+    volumes:
+      - ./certbot/www:/var/www/certbot:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
 
 networks:
   app-network:
