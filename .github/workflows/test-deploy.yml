@@ -16,34 +16,7 @@ jobs:
         with:
           host: 3.145.20.10
           username: ubuntu
-          key: 
-          -----BEGIN RSA PRIVATE KEY-----
-MIIEpAIBAAKCAQEAqm0IchACc4tZMNFeBgmgAAgf8xk3t2GTIAcwYZFNlaOsZ8J0
-96EwAKgxtpIwrx6brdDnwsJpZM0GU7bchw8IDvTzq/HbKHtf7CJT00+Y1BLTN0E5
-hD93NDFDGeWoMOncfY8weCTzmpkLJKQejYzTltf0+QVljBed7tJq5y4zlFIjVagq
-xwZfcB20IklUukc9MikQP1qWDGezY0/WuSSzOOg7cJDo2A+GnrGISipsZ/NclTZ+
-dtNdXkYkCZ18sQrxFDcs0i3MvsJFo6EcBRFwdbO+jZkcFxi39E6BuMRTGFbcLaoc
-1EmCkyAXKEzppR5TO/RzNM2VuK971HGDZP8jFwIDAQABAoIBAGYICPpg41bRooA7
-mJL8yDG8q4QbIORFIpQWObzwBQcFin5ESUrH0blS+RBYzZTKOmIBo/9R7U9P/+22
-mKizMxvhQtE6Zv8BfhgdJRppmRG+g32dKxYl+PPiWk3y1JMUL9FsHJSRatavsaAq
-MbCFE1hHyn4b4QPST9dfWmk1m+O7nqZqY8Lw1VNEIyITGdPnwbuHtrksKMvzYdYD
-AjTHyqfTxbyGIzX+AHe7Mwt7KpQOTUjsTQfLJKTVPWOcqZoxWE48TObbT672WrOn
-bKP5uwO+rZYLFwFSErYBQQ9uwL8ZLhYzY8PLO9wHqTBzOAfBsKSM0IFs8wifgI89
-n9wQ6gECgYEA3cEUn42ILdTZu/q2VwFx26xzJF4W80aflTsTlAqnVDHg0QsYHhsa
-pq+GfIHJ5Y6KmOT6QelHdibC9OseqyVTjs0k0ZHEghp11Pn/khFB4AfhSLMO8YOB
-604n4C73kenSji7DIwTPM0tSN+mahiyir8AqLqUaZgxmh0Ya9n4YFNcCgYEAxL63
-9o8XkqPXpR7ydcFiK+uxrcKAWqlpV7H6SDdCQwa53egEa6kWcotRSc0jfrzaDJYn
-DtPoKJFOFdL6pd1H7VVD7E/9nmcwUjf7/onIhjBSsxojJhW8MsWZjHjqUrHbn1lF
-izyMw3nJMUWO3Yo3/R4CPf75cLnq/jh8ZikpW8ECgYACLPnJ0vaqFHOKb5xIYEBA
-uoFqsu2gt2mraif4BN69abvd8TDsYrGxPvmf0RotAWgEtgJqkSJdW2YARypG3Zfj
-R8n7sGVwLVhInadPRJIT45/nObKE1hh5OYwUnAFb0iJ5uKW7ezmZNDz7RXR5qohy
-Fv2S9ZW7uJVs8FglYPlVgwKBgQCsY7AtihPNmWJKfGNWaqvqcAqvhc2Rov96p6f1
-vvWAZVRW7AVzkCTrGMeRMv32/uLQRIDUrTiu0yLoXITi8JElk6CAX1aKhUAByqwy
-y+e4LH9KD4zcwg61Lg7s1sX6z3zwkvgsmFF+tidj1N7pn0KPtsugJtnJvB37wuK9
-YTOsAQKBgQC/8//acS+CaXQ66L6auwtMZpSpLSnM/3NRbA9I90oRnaWlKTUyG2n2
-JUCAMl64w2FQ/0R6vtvCQyhtbTQG4dxIffIIQYi4XMX8jW/9vNrGXajDhXYlFlh0
-5/HHq+bylH0Vxvy6s7BkdbGEvsQHPuNVKn0JI78fN6O1svesffdRFA==
------END RSA PRIVATE KEY-----  
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             # 1. Navigate to the app directory
             mkdir -p /home/ubuntu/api
