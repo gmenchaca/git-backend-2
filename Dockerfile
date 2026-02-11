@@ -44,7 +44,7 @@ RUN chown -R www-data:www-data /var/www/html && \
     chmod -R 755 /var/www/html /var/www/html/bootstrap/cache || true
 
 # Expose and set default PORT env
-ENV PORT=8080
+ENV PORT=80
 EXPOSE 8080
 
 
