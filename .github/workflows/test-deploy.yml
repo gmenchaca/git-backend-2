@@ -22,11 +22,11 @@ jobs:
             mkdir -p /home/ubuntu/api
             cd /home/ubuntu/api
 
-            # 2. Pull the latest code (Assuming you've set up an SSH key on the EC2 for GitHub)
+            # 2. Pull the latest code
             if [ -d ".git" ]; then
               git pull origin dev
             else
-              git clone -b dev git@/gmenchaca/git-backend-2.git .
+              git clone -b dev git@github.com:gmenchaca/git-backend-2.git .
             fi
 
             # 3. Clean up old containers to save space on your 24.04 instance
