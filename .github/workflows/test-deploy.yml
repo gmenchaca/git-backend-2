@@ -18,18 +18,26 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # 1. Enter the directory
-            mkdir -p /home/ubuntu/api
+            # 1. Now it is safe to delete everything
+            sudo rm -rf /home/ubuntu/api
+            mkdir -p /home/ubuntu/api/certbot/conf/live/vibeadventures.net/
             cd /home/ubuntu/api
 
-            # 2. The "Smart Clean" - THIS IS THE MISSING STEP
-            # This clears out old code but leaves your SSL certs alone
-            find . -maxdepth 1 ! -name 'certbot' ! -name '.' -exec rm -rf {} +
-
-            # 3. Clone fresh (now it will work because the folder is 'empty' enough)
+            # 2. Clone fresh (will work now because folder was deleted)
             git clone -b dev https://github.com/gmenchaca/git-backend-2.git .
 
-            # 4. Recreate the .env
+            # 3. Create the cert files from Secrets
+            # Ensure the directory exists first
+            mkdir -p certbot/conf/live/vibeadventures.net
+            
+            # Write the secrets to the files
+            echo "${{ secrets.SSL_FULLCHAIN }}" > certbot/conf/live/vibeadventures.net/fullchain.pem
+            echo "${{ secrets.SSL_PRIVKEY }}" > certbot/conf/live/vibeadventures.net/privkey.pem
+            
+            # CRITICAL: Set permissions so Nginx can read them
+            chmod -R 644 certbot/conf/
+            
+            # 4. Create the .env
             echo "${{ secrets.DOT_ENV_PRODUCTION }}" > .env
 
             # 5. Build and Run
