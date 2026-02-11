@@ -18,19 +18,19 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # 1. Clean and Prepare directory
-            sudo rm -rf /home/ubuntu/api
+            # 1. Prepare directory without losing certs
             mkdir -p /home/ubuntu/api
             cd /home/ubuntu/api
 
-            # 2. Clone fresh (HTTPS is easier for this test)
+            # Delete everything EXCEPT the certbot folder
+            # This keeps your SSL keys safe
+            find . -maxdepth 1 ! -name 'certbot' ! -name '.' -exec rm -rf {} +
+
+            # 2. Clone fresh
             git clone -b dev https://github.com/gmenchaca/git-backend-2.git .
 
             # 3. Handle the .env file
-            # If you manually created a .env on the EC2, 
-            # the 'rm -rf' above just deleted it. 
-            # Let's recreate a basic one or move it from a safe spot:
             echo "${{ secrets.DOT_ENV_PRODUCTION }}" > .env
 
-            # 4. Build and Run (Production)
+            # 4. Build and Run
             docker compose up -d --build

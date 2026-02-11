@@ -13,7 +13,7 @@ http {
     
     # Redirect all HTTP to HTTPS
     server {
-        listen 0.0.0.0:80;
+        listen ${PORT};
         server_name vibeadventures.net; #
 
         # Required for Let's Encrypt validation
@@ -28,12 +28,12 @@ http {
 
     #Main HTTPS Server
     server {
-        listen 0.0.0.0:443 ssl;
-        server_name vibeadventures.net;  <--- Replace this
+        listen 443 ssl; 
+        server_name vibeadventures.net;
 
         ssl_certificate /etc/letsencrypt/live/vibeadventures.net/fullchain.pem;
         ssl_certificate_key /etc/letsencrypt/live/vibeadventures.net/privkey.pem;
-
+        
         root /var/www/html/public;
         index index.php index.html;
 
