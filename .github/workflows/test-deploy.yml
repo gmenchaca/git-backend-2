@@ -14,25 +14,23 @@ jobs:
       - name: SSH and Setup
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: 3.129.7.77
+          host: ${{ secrets.SSH_HOST }}
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # 1. Navigate to the app directory
+            # 1. Clean and Prepare directory
+            sudo rm -rf /home/ubuntu/api
             mkdir -p /home/ubuntu/api
             cd /home/ubuntu/api
 
-            # 2. Pull the latest code
-            if [ -d ".git" ]; then
-              git pull origin dev
-            else
-              git clone -b dev https://github.com/gmenchaca/git-backend-2.git .
-            fi
+            # 2. Clone fresh (HTTPS is easier for this test)
+            git clone -b dev https://github.com/gmenchaca/git-backend-2.git .
 
-            # 3. Clean up old containers to save space on your 24.04 instance
-            docker compose down --remove-orphans
-            docker system prune -f
+            # 3. Handle the .env file
+            # If you manually created a .env on the EC2, 
+            # the 'rm -rf' above just deleted it. 
+            # Let's recreate a basic one or move it from a safe spot:
+            echo "${{ secrets.DOT_ENV_PRODUCTION }}" > .env
 
             # 4. Build and Run
-            # This will use the .env file already present on your EC2
             docker compose -f docker-compose-dev.yml up -d --build
