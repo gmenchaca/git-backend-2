@@ -1,0 +1,39 @@
+name: Test Deploy to EC2
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: SSH and Setup
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST_MAIN }}
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY_MAIN }}
+          script: |
+            # 1. Force delete the old directory using sudo
+            # This clears out root-owned Docker files and the non-empty folder
+            sudo rm -rf /home/ubuntu/api
+            
+            # 2. Recreate the directory and enter it
+            mkdir -p /home/ubuntu/api
+            cd /home/ubuntu/api
+
+            # 3. Clone fresh (will work now because sudo rm wiped the path)
+            git clone -b main https://github.com/gmenchaca/git-backend-2.git .
+
+            # 4. Create the cert folders with sudo
+            sudo mkdir -p certbot/conf/live/vibeadventures.net
+                
+            # 5. Create the .env
+            echo "${{ secrets.DOT_ENV_MAIN }}" > .env
+
+            # 6. Build and Run
+            sudo docker compose up -d --build
