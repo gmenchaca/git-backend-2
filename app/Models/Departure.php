@@ -24,4 +24,8 @@ class Departure extends Model
         return $this->hasMany(Accommodation::class, 'departure', 'id');
     }
     */
+    public function tour()
+    {
+        return $this->belongsTo(Tour::class, 'tour_id', 'tour_id');
+    }
 }

@@ -474,124 +474,113 @@ public static function getDeparturesByTour($params)
         return ['items' => array_values($filteredDepartures)];
     }
      
-    public function getMultipleDeparturesOnlyDb(Request $request)
-    {
-        Log::info('getMultipleDeparturesOnlyDb called with:', $request->all());
-    
-        try {
-            $params = $request->all();
-            if (!isset($params['tourIds'])) {
-                return response()->json(['error' => 'tourIds parameter is required'], 400);
-            }
-    
-            $tourIds = explode(',', $params['tourIds']);
-    
-            $departures = [];
-            $itemsPerPage = 10;
-            $page = isset($params['page']) ? (int)$params['page'] : 1;
-            $start = ($page - 1) * $itemsPerPage;
-    
-            // only process the chunk of tourIds for this page
-            $paginatedTourIds = array_slice($tourIds, $start, $itemsPerPage);
-    
-            $travelersGlobal = isset($params['travelers']) ? (int)$params['travelers'] : 1;
-    
-            foreach ($paginatedTourIds as $tourId) {
-                $params['tourId'] = $tourId;
-                $tour = Tour::where('tour_id', $tourId)->first();
-                if (! $tour) {
-                    Log::info("Tour not found, skipping", ['tourId' => $tourId]);
-                    continue;
-                }
-    
-                // pass travelers as param (so getDeparturesByTourOnlyDb could use it if needed)
-                $params['travelers'] = $travelersGlobal;
-                $departureDetails = $this->getDeparturesByTourOnlyDb($params);
-                $items = $departureDetails['items'] ?? [];
-    
-                if (empty($items)) {
-                    Log::info('No departures returned from DB for tour', ['tourId' => $tourId]);
-                    continue;
-                }
-    
-                $tourDepartures = [];
-                $cheapestDeparture = null;
-    
-                foreach ($items as $item) {
-                    // normalize price_total
-                    $priceTotal = isset($item['price_total']) ? (float)$item['price_total'] : null;
-    
-                    // normalize accommodations (could be null, json string, or array)
-                    $accommodationsRaw = $item['accommodations'] ?? null;
-                    $accommodations = [];
-    
-                    if ($accommodationsRaw) {
-                        if (is_string($accommodationsRaw)) {
-                            $decoded = json_decode($accommodationsRaw, true);
-                            $accommodations = is_array($decoded) ? $decoded : [];
-                        } elseif (is_array($accommodationsRaw)) {
-                            $accommodations = $accommodationsRaw;
-                        }
-                    }
-    
-                    // filter valid accommodations according to travelers
-                    $travelers = $travelersGlobal;
-                    $validAccommodations = array_filter($accommodations, function ($acc) use ($travelers) {
-                        if (!isset($acc['beds_number']) || $acc['beds_number'] <= 0) {
-                            return false;
-                        }
-                        $isShared = isset($acc['is_shared']) ? (bool)$acc['is_shared'] : false;
-    
-                        if ($travelers === 1) {
-                            return $isShared || ($acc['beds_number'] === 1);
-                        }
-    
-                        // for multiple travelers, require that beds_number divides travelers evenly
-                        return ($travelers % $acc['beds_number'] === 0);
-                    });
-    
-                    // find cheapest accommodation by 'value' (if any)
-                    $cheapestAccommodation = null;
-                    if (!empty($validAccommodations)) {
-                        usort($validAccommodations, function ($a, $b) {
-                            $va = isset($a['value']) ? floatval($a['value']) : INF;
-                            $vb = isset($b['value']) ? floatval($b['value']) : INF;
-                            return $va <=> $vb;
-                        });
-                        $cheapestAccommodation = $validAccommodations[0];
-                    }
-    
-                    // attach computed fields to each departure item
-                    $item['valid_accommodations'] = array_values($validAccommodations);
-                    $item['cheapest_accommodation'] = $cheapestAccommodation;
-    
-                    $tourDepartures[] = $item;
-    
-                    // track cheapest departure by price_total
-                    if ($priceTotal !== null) {
-                        if ($cheapestDeparture === null || $priceTotal < (float)($cheapestDeparture['price_total'] ?? INF)) {
-                            $cheapestDeparture = $item;
-                        }
-                    }
-                }
-    
-                $departures[] = [
-                    'tour_id' => $tourId,
-                    'tour' => $tour->toArray(),
-                    'departures' => $tourDepartures,
-                    'cheapest_departure' => $cheapestDeparture
-                ];
-            }
-    
-            Log::info('Returning departures', ['departures' => $departures]);
-    
-            return response()->json(['items' => $departures], 200);
-    
-        } catch(Exception $e) {
-            Log::error('getMultipleDeparturesOnlyDb error', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            return response()->json(['status' => false, 'response' => $e->getMessage()], 500);
+  public function getMultipleDeparturesOnlyDb(Request $request)
+{
+    // YOUR LOG: Initial call log
+    Log::info('getMultipleDeparturesOnlyDb called with:', $request->all());
+
+    try {
+        $params = $request->all();
+        if (!isset($params['tourIds'])) {
+            return response()->json(['error' => 'tourIds parameter is required'], 400);
         }
+
+        $tourIds = explode(',', $params['tourIds']);
+        $itemsPerPage = 10;
+        $page = (int)$request->input('page', 1);
+        $paginatedTourIds = array_slice($tourIds, ($page - 1) * $itemsPerPage, $itemsPerPage);
+
+        if (empty($params['date_range'])) {
+            return response()->json(['error' => 'Missing date_range parameter'], 400);
+        }
+        $dateRange = explode(',', $params['date_range']);
+        $startDate = date('Y-m-d', strtotime($dateRange[0]));
+        $endDate   = date('Y-m-d', strtotime($dateRange[1]));
+        $travelersGlobal = (int)$request->input('travelers', 1);
+
+        // Fetch everything in 2 queries (Tours then Departures)
+        $tours = \App\Models\Tour::whereIn('tour_id', $paginatedTourIds)
+            ->with([
+                'tourDepartures' => function ($query) use ($startDate, $endDate, $travelersGlobal) {
+                    $query->whereBetween('date', [$startDate, $endDate])
+                          ->where('availability', '>=', $travelersGlobal)
+                          ->where('departure_type', 'guaranteed');
+                },
+                'cities_list', // Eager load cities
+                'types_list'   // Eager load types
+            ])
+            ->get();
+
+        $finalResults = [];
+        
+        // We map the requested IDs to the fetched collection to detect missing tours
+        foreach ($paginatedTourIds as $tourId) {
+            $tour = $tours->firstWhere('tour_id', $tourId);
+
+            if (!$tour) {
+                // YOUR LOG: Tour missing from DB
+                Log::info("Tour not found, skipping", ['tourId' => $tourId]);
+                continue;
+            }
+
+            $items = $tour->tourDepartures;
+
+            if ($items->isEmpty()) {
+                // YOUR LOG: No departures found for this tour
+                Log::info('No departures returned from DB for tour', ['tourId' => $tourId]);
+                // We still add the tour info but with empty departures to keep the response structure consistent
+            }
+
+            $tourDepartures = [];
+            $cheapestDeparture = null;
+
+            foreach ($items as $item) {
+                $accommodationsRaw = $item->accommodations;
+                $accommodations = is_string($accommodationsRaw) ? json_decode($accommodationsRaw, true) : ($accommodationsRaw ?? []);
+
+                $validAccommodations = array_filter($accommodations, function ($acc) use ($travelersGlobal) {
+                    if (!isset($acc['beds_number']) || $acc['beds_number'] <= 0) return false;
+                    $isShared = (bool)($acc['is_shared'] ?? false);
+                    return ($travelersGlobal === 1) ? ($isShared || $acc['beds_number'] === 1) : ($travelersGlobal % $acc['beds_number'] === 0);
+                });
+
+                $cheapestAcc = null;
+                if (!empty($validAccommodations)) {
+                    usort($validAccommodations, fn($a, $b) => ($a['value'] ?? INF) <=> ($b['value'] ?? INF));
+                    $cheapestAcc = $validAccommodations[0];
+                }
+
+                $departureData = $item->toArray();
+                $departureData['valid_accommodations'] = array_values($validAccommodations);
+                $departureData['cheapest_accommodation'] = $cheapestAcc;
+                $tourDepartures[] = $departureData;
+
+                $priceTotal = (float)($departureData['price_total'] ?? INF);
+                if ($cheapestDeparture === null || $priceTotal < (float)($cheapestDeparture['price_total'] ?? INF)) {
+                    $cheapestDeparture = $departureData;
+                }
+            }
+
+            $finalResults[] = [
+                'tour_id' => $tourId,
+                'tour' => $tour->toArray(),
+                'cities' => $tour->cities_list, 
+                'types' => $tour->types_list,   
+                'departures' => $tourDepartures,
+                'cheapest_departure' => $cheapestDeparture
+            ];
+        }
+
+        // YOUR LOG: Final return log
+        Log::info('Returning departures', ['departures' => $finalResults]);
+
+        return response()->json(['items' => $finalResults], 200);
+
+    } catch (\Exception $e) {
+        Log::error('getMultipleDeparturesOnlyDb error', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+        return response()->json(['status' => false, 'response' => $e->getMessage()], 500);
     }
+}
        
 
     private function getDeparturesByTourOnlyDb($params)

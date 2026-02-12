@@ -125,4 +125,19 @@ class Tour extends Model
     {
         return $this->hasMany(Order::class, 'tour_id', 'tour_id');
     }
+
+    public function tourDepartures() // Renamed to avoid collision with column
+    {
+        return $this->hasMany(Departure::class, 'tour_id', 'tour_id');
+    }
+
+    public function cities_list()
+    {
+        return $this->belongsToMany(City::class, 'tour_cities', 'tour_id', 't_city_id', 'tour_id', 't_city_id');
+    }
+
+    public function types_list()
+    {
+        return $this->belongsToMany(Type::class, 'tour_tour_types', 'tour_id', 'tour_type_id', 'tour_id', 'tour_type_id');
+    }
 }
