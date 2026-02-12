@@ -36,4 +36,4 @@ jobs:
             echo "${{ secrets.DOT_ENV_MAIN }}" > .env
 
             # 6. Build and Run
-            sudo docker compose up -d --build 
+            sudo docker compose up -d --build
