@@ -2,7 +2,7 @@ name: Test Deploy to EC2
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "jobs" ]
 
 jobs:
   deploy:
@@ -14,7 +14,7 @@ jobs:
       - name: SSH and Setup
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SSH_HOST_MAIN }}
+          host: ${{ secrets.SSH_HOST_JOBS }}
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY_MAIN }}
           script: |
@@ -32,8 +32,8 @@ jobs:
             cd /home/ubuntu/api
 
             # 3. Fresh Clone
-            git clone -b main https://github.com/gmenchaca/git-backend-2.git .
-            echo "${{ secrets.DOT_ENV_MAIN }}" > .env
+            git clone -b jobs https://github.com/gmenchaca/git-backend-2.git .
+            echo "${{ secrets.DOT_ENV_JOBS }}" > .env
 
             # 4. Start Containers
             sudo docker compose up -d --build
