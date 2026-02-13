@@ -24,9 +24,11 @@ jobs:
               sudo docker compose down || true
             fi
 
-            # 2. Now it is safe to delete and recreate
+            # 2. Recreate directory and set host ownership
             sudo rm -rf /home/ubuntu/api
             mkdir -p /home/ubuntu/api
+            # FIX: Ensure the ubuntu user owns the base directory before cloning
+            sudo chown -R ubuntu:ubuntu /home/ubuntu/api
             cd /home/ubuntu/api
 
             # 3. Fresh Clone
@@ -36,9 +38,20 @@ jobs:
             # 4. Start Containers
             sudo docker compose up -d --build
 
-            # 5. Run PHP commands (Wait 5 seconds to ensure PHP-FPM is ready)
+            # 5. Run PHP commands
             sleep 5
             sudo docker exec api-app-1 composer install --no-dev --no-interaction --optimize-autoloader
+            
+            # Internal Container Permissions
             sudo docker exec -u root api-app-1 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+            
+            # FIX: Host-side Permissions for Cron/Logs
+            # This ensures the 'ubuntu' user can write to the log file your script uses
+            sudo mkdir -p /home/ubuntu/api/storage/logs
+            sudo touch /home/ubuntu/api/storage/logs/sync_tours.log
+            sudo chown -R ubuntu:ubuntu /home/ubuntu/api/storage/logs
+            sudo chmod -R 775 /home/ubuntu/api/storage/logs
+
+            # 6. Laravel Optimization
             sudo docker exec api-app-1 php artisan optimize:clear
             sudo docker exec api-app-1 php artisan config:cache
