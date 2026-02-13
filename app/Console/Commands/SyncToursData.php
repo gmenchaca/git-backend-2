@@ -59,8 +59,8 @@ class SyncToursData extends Command
 
         // default behavior if no pages provided
         if (empty($raw)) {
-            $this->info("No pages provided. Using default pages 1-2.");
-            $pages = ["pages:1-300"];
+            $this->info("No pages provided. Using default pages 1-300.");
+            $pages = "1-300";
         } else {
             $pages = $this->parsePagesInput($raw);
             if (empty($pages)) {
