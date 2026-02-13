@@ -15,11 +15,10 @@ server {
     # Pass PHP scripts to the api-app container via FastCGI
     # Matches the service name in your docker-compose.yml
     location ~ \.php$ {
-        include fastcgi_params;
-        fastcgi_pass app:9000; # Change 'api-app' to 'app' to match your docker-compose
-        fastcgi_index index.php;
-        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-    }
+    include fastcgi_params;
+    fastcgi_pass app:9000; # This MUST match the service name 'app' in docker-compose
+    fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+}
 
     location ~ /\.ht {
         deny all;

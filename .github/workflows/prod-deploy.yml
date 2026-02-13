@@ -28,12 +28,9 @@ jobs:
 
             # 3. Clone fresh (will work now because sudo rm wiped the path)
             git clone -b main https://github.com/gmenchaca/git-backend-2.git .
-
-            # 4. Create the cert folders with sudo
-            sudo mkdir -p certbot/conf/live/vibeadventures.net
                 
-            # 5. Create the .env
+            # 4. Create the .env
             echo "${{ secrets.DOT_ENV_MAIN }}" > .env
 
-            # 6. Build and Run
+            # 5. Build and Run
             sudo docker compose up -d --build

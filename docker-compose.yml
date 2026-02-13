@@ -1,27 +1,27 @@
 version: '3'
 services:
-
   app:
     build:
       context: .
       dockerfile: Dockerfile-app
+    volumes:
+      - .:/var/www/html  # This shares your code with the PHP container
     networks:
       - app-network
-    # TIP: Instead of listing all 50 variables, just use this:
     env_file:
       - .env
 
   nginx:
     build:
       context: .
-      dockerfile: Dockerfile-serve # This uses your Nginx + start.sh logic
-    environment:
-      - PORT=80
+      dockerfile: Dockerfile-serve
+    volumes:
+      - .:/var/www/html  # This shares the SAME code with the Nginx container
     ports:
       - "80:80"
     depends_on:
       - app
-    networks: # <--- CRITICAL: Nginx needs to be on the same network to find 'app'
+    networks:
       - app-network
 
 networks:
