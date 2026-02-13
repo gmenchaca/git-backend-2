@@ -18,26 +18,27 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY_MAIN }}
           script: |
-            cd /home/ubuntu/api
-            
-            # 1. Update code and rebuild
+            # 1. Enter the directory if it exists and STOP containers
+            if [ -d "/home/ubuntu/api" ]; then
+              cd /home/ubuntu/api
+              sudo docker compose down || true
+            fi
+
+            # 2. Now it is safe to delete and recreate
             sudo rm -rf /home/ubuntu/api
             mkdir -p /home/ubuntu/api
+            cd /home/ubuntu/api
+
+            # 3. Fresh Clone
             git clone -b main https://github.com/gmenchaca/git-backend-2.git .
             echo "${{ secrets.DOT_ENV_MAIN }}" > .env
 
-            # 2. Build and Start
+            # 4. Start Containers
             sudo docker compose up -d --build
 
-            # 3. Install Composer dependencies inside the container
-            # We use --no-dev and --optimize-autoloader for production speed
+            # 5. Run PHP commands (Wait 5 seconds to ensure PHP-FPM is ready)
+            sleep 5
             sudo docker exec api-app-1 composer install --no-dev --no-interaction --optimize-autoloader
-
-            # 4. Fix Permissions (Crucial for the 500/504 errors you saw)
             sudo docker exec -u root api-app-1 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-            sudo docker exec -u root api-app-1 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
-
-            # 5. Clear and re-cache Laravel settings
             sudo docker exec api-app-1 php artisan optimize:clear
             sudo docker exec api-app-1 php artisan config:cache
-            sudo docker exec api-app-1 php artisan route:cache
