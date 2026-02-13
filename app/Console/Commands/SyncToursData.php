@@ -57,17 +57,19 @@ class SyncToursData extends Command
             }
         }
 
-        // default behavior if no pages provided
         if (empty($raw)) {
             $this->info("No pages provided. Using default pages 1-300.");
-            $pages = "1-300";
+            // FIX: Parse the default string so it becomes an array [1, 2, 3, ... 300]
+            $pages = $this->parsePagesInput("1-300"); 
         } else {
             $pages = $this->parsePagesInput($raw);
             if (empty($pages)) {
                 $this->error("Invalid pages input: {$raw}. Use formats like 1-10, 5, or 1,3,5");
-                return 1; // non-zero exit code for failure
+                return 1;
             }
         }
+
+
 
         if ($dateRangeRaw) {
             $dateRangeRaw = trim($dateRangeRaw);
@@ -96,6 +98,7 @@ class SyncToursData extends Command
             $this->info("No date_range provided. Using default date window (now +1 day to now +91 days).");
         }
 
+        // Now $pages is guaranteed to be an array, and implode will work
         $this->info('Pages to process: ' . implode(', ', $pages));
 
         foreach ($pages as $currentPage) {
