@@ -54,4 +54,4 @@ jobs:
 
             # 6. Laravel Optimization
             sudo docker exec api-app-1 php artisan optimize:clear
-            sudo docker exec api-app-1 php artisan config:cache
+            sudo docker exec api-app-1 php artisan config:cache 
