@@ -18,40 +18,38 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY_JOBS }}
           script: |
-            # 1. Enter the directory if it exists and STOP containers
+            # 1. Cleanup and Prepare
             if [ -d "/home/ubuntu/api" ]; then
               cd /home/ubuntu/api
               sudo docker compose down || true
             fi
-
-            # 2. Recreate directory and set host ownership
             sudo rm -rf /home/ubuntu/api
             mkdir -p /home/ubuntu/api
-            # FIX: Ensure the ubuntu user owns the base directory before cloning
             sudo chown -R ubuntu:ubuntu /home/ubuntu/api
-            cd /home/ubuntu/api
 
-            # 3. Fresh Clone
+            # 2. Fresh Clone and Env
+            cd /home/ubuntu/api
             git clone -b jobs https://github.com/gmenchaca/git-backend-2.git .
             echo "${{ secrets.DOT_ENV_JOBS }}" > .env
+
+            # 3. Pre-start: Create necessary host files
+            # Creating these now ensures Docker mounts them correctly
+            mkdir -p storage/logs
+            touch storage/logs/sync_tours.log
+            touch storage/logs/laravel.log
 
             # 4. Start Containers
             sudo docker compose up -d --build
 
-            # 5. Run PHP commands
+            # 5. Post-Build Setup
             sleep 5
             sudo docker exec api-app-1 composer install --no-dev --no-interaction --optimize-autoloader
             
-            # Internal Container Permissions
+            # 6. FIX: Final Permissions
+            # We do this once to cover everything: storage, cache, and your new cert
             sudo docker exec -u root api-app-1 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+            sudo docker exec -u root api-app-1 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
             
-            # FIX: Host-side Permissions for Cron/Logs
-            # This ensures the 'ubuntu' user can write to the log file your script uses
-            sudo mkdir -p /home/ubuntu/api/storage/logs
-            sudo touch /home/ubuntu/api/storage/logs/sync_tours.log
-            sudo chown -R ubuntu:ubuntu /home/ubuntu/api/storage/logs
-            sudo chmod -R 775 /home/ubuntu/api/storage/logs
-
-            # 6. Laravel Optimization
-            sudo docker exec api-app-1 php artisan optimize:clear
+            # 7. Laravel Optimization
             sudo docker exec api-app-1 php artisan config:cache
+            sudo docker exec api-app-1 php artisan route:cache
