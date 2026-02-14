@@ -36,7 +36,7 @@ jobs:
             echo "${{ secrets.DOT_ENV_JOBS }}" > .env
 
             # 4. Start Containers
-            sudo docker-compose up -d --build
+            sudo docker compose up -d --build
 
             # 5. Run PHP commands
             sleep 5
