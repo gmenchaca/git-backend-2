@@ -23,9 +23,9 @@ class TourRadarController extends Controller
     public static function getAccessToken()
     {
 
-        $clientId = env('TOURRADAR_CLIENT_ID', 'hpg0tvme3ujrwcnd6fcyttwst8');
-        $clientSecret = env('TOURRADAR_CLIENT_SECRET', 'mjjqpzhg19rifw174ehlw1a56nufbvwxrcya2w4bz32dsbjf594');
-        $urlToken = 'https://oauth.api.sandbox.b2b.tourradar.com/oauth2/token';
+        $clientId = env('TOURRADAR_CLIENT_ID', 'k6mh54llx4v6hf58toqtvv71vp');
+        $clientSecret = env('TOURRADAR_CLIENT_SECRET', '7ya951n89pgegh77j5kohubv90j3684kxoxi8q1zbl0oyhsskt5');
+        $urlToken = 'https://oauth.api.b2b.tourradar.com/oauth2/token';
         $authorization = base64_encode($clientId . ':' . $clientSecret);
         $headers = [
             'Content-Type' => 'application/x-www-form-urlencoded',
