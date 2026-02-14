@@ -16,7 +16,7 @@ jobs:
         with:
           host: ${{ secrets.SSH_HOST_JOBS }}
           username: ubuntu
-          key: ${{ secrets.SSH_PRIVATE_KEY_MAIN }}
+          key: ${{ secrets.SSH_PRIVATE_KEY_JOBS }}
           script: |
             # 1. Enter the directory if it exists and STOP containers
             if [ -d "/home/ubuntu/api" ]; then
