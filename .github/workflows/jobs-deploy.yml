@@ -50,8 +50,8 @@ jobs:
             sudo docker exec api-app-1 composer install --no-dev --no-interaction --optimize-autoloader
             
             # 7. Permissions (Inside Container)
-            sudo docker exec -u root api-app-1 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
-            sudo docker exec -u root api-app-1 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+            sudo docker exec -u root api-app-1 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/app/certs
+            sudo docker exec -u root api-app-1 chmod -R 755 /var/www/html/app/certs
             
             # 8. Laravel Optimization
             sudo docker exec api-app-1 php artisan config:cache

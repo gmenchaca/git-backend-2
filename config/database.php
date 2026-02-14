@@ -58,9 +58,9 @@ return [
             'prefix_indexes' => true,
             'strict' => true,
             'engine' => null,
-            'options' => [
-                PDO::MYSQL_ATTR_SSL_CA => base_path('database/certs/global-bundle.pem'),
-            ],
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                    PDO::MYSQL_ATTR_SSL_CA => base_path('app/certs/global-bundle.pem'),
+                ]) : [],
         ],
 
         'pgsql' => [
