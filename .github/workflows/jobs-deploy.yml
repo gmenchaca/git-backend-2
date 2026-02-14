@@ -18,38 +18,41 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY_JOBS }}
           script: |
-            # 1. Cleanup and Prepare
-            if [ -d "/home/ubuntu/api" ]; then
-              cd /home/ubuntu/api
+            # 1. Enter Directory
+            mkdir -p /home/ubuntu/api
+            cd /home/ubuntu/api
+
+            # 2. Stop and Clean (if compose file exists)
+            if [ -f "docker-compose.yml" ]; then
               sudo docker compose down || true
             fi
-            sudo rm -rf /home/ubuntu/api
-            mkdir -p /home/ubuntu/api
-            sudo chown -R ubuntu:ubuntu /home/ubuntu/api
 
-            # 2. Fresh Clone and Env
-            cd /home/ubuntu/api
-            git clone -b jobs https://github.com/gmenchaca/git-backend-2.git .
+            # 3. Update Code
+            # If .git exists, pull; otherwise clone. This is safer than rm -rf.
+            if [ -d ".git" ]; then
+              git fetch origin jobs
+              git reset --hard origin/jobs
+            else
+              git clone -b jobs https://github.com/gmenchaca/git-backend-2.git .
+            fi
+
+            # 4. Setup Environment and Files
             echo "${{ secrets.DOT_ENV_JOBS }}" > .env
-
-            # 3. Pre-start: Create necessary host files
-            # Creating these now ensures Docker mounts them correctly
-            mkdir -p storage/logs
+            mkdir -p storage/logs storage/app/certs bootstrap/cache
             touch storage/logs/sync_tours.log
             touch storage/logs/laravel.log
 
-            # 4. Start Containers
-            sudo docker compose up -d --build
+            # 5. Start Containers
+            # We use --wait to ensure containers are READY before moving to step 6
+            sudo docker compose up -d --build --wait
 
-            # 5. Post-Build Setup
-            sleep 5
+            # 6. Post-Build Setup
             sudo docker exec api-app-1 composer install --no-dev --no-interaction --optimize-autoloader
             
-            # 6. FIX: Final Permissions
-            # We do this once to cover everything: storage, cache, and your new cert
+            # 7. Permissions (Inside Container)
             sudo docker exec -u root api-app-1 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
             sudo docker exec -u root api-app-1 chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
             
-            # 7. Laravel Optimization
+            # 8. Laravel Optimization
             sudo docker exec api-app-1 php artisan config:cache
             sudo docker exec api-app-1 php artisan route:cache
