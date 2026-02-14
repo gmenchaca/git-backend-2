@@ -31,27 +31,23 @@ jobs:
             sudo chown -R ubuntu:ubuntu /home/ubuntu/api
             cd /home/ubuntu/api
 
-            # 3. Fresh Clone
+            # 3. Fresh Clone 
             git clone -b main https://github.com/gmenchaca/git-backend-2.git .
+            
+            # 4. Setup Environment and Files
             echo "${{ secrets.DOT_ENV_MAIN }}" > .env
+            touch storage/logs/sync_tours.log
+            touch storage/logs/laravel.log
 
-            # 4. Start Containers
-            sudo docker compose up -d --build
+            # 5. Start Containers
+            sudo docker compose up -d --build --wait
 
-            # 5. Run PHP commands
-            sleep 5
+            # 6. Post-Build Setup
             sudo docker exec api-app-1 composer install --no-dev --no-interaction --optimize-autoloader
             
-            # Internal Container Permissions
-            sudo docker exec -u root api-app-1 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+            # 7. Permissions (Inside Container)
+            sudo docker exec -u root api-app-1 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache 
             
-            # FIX: Host-side Permissions for Cron/Logs
-            # This ensures the 'ubuntu' user can write to the log file your script uses
-            sudo mkdir -p /home/ubuntu/api/storage/logs
-            sudo touch /home/ubuntu/api/storage/logs/sync_tours.log
-            sudo chown -R ubuntu:ubuntu /home/ubuntu/api/storage/logs
-            sudo chmod -R 775 /home/ubuntu/api/storage/logs
-
-            # 6. Laravel Optimization
-            sudo docker exec api-app-1 php artisan optimize:clear
+            # 8. Laravel Optimization
             sudo docker exec api-app-1 php artisan config:cache
+            sudo docker exec api-app-1 php artisan route:cache
