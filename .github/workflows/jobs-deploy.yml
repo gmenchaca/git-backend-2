@@ -1,0 +1,63 @@
+name: Test Deploy to EC2
+
+on:
+  push:
+    branches: [ "jobs" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: SSH and Setup
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST_JOBS }}
+          username: ubuntu
+          key: ${{ secrets.SSH_PRIVATE_KEY_JOBS }}
+          script: |
+            # 1. Enter Directory
+            mkdir -p /home/ubuntu/api
+            cd /home/ubuntu/api
+
+            # 2. Stop and Clean (if compose file exists)
+            if [ -f "docker-compose.yml" ]; then
+              sudo docker compose down || true
+            fi
+
+            # 3. Update Code
+            # If .git exists, pull; otherwise clone. This is safer than rm -rf.
+            if [ -d ".git" ]; then
+              git fetch origin jobs
+              git reset --hard origin/jobs
+            else
+              git clone -b jobs https://github.com/gmenchaca/git-backend-2.git .
+            fi
+
+            # 4. Setup Environment and Files
+            echo "${{ secrets.DOT_ENV_JOBS }}" > .env
+            mkdir -p storage/logs storage/app/certs bootstrap/cache
+
+            # Fix: Create the PHP config file ON THE HOST so we can mount it
+            echo "memory_limit=1G" > php-memory.ini 
+
+            touch storage/logs/sync_tours.log
+            touch storage/logs/laravel.log
+
+            # 5. Start Containers
+            # We use --wait to ensure containers are READY before moving to step 6
+            sudo docker compose up -d --build --wait
+
+            # 6. Post-Build Setup
+            sudo docker exec api-app-1 composer install --no-dev --no-interaction --optimize-autoloader
+            
+            # 7. Permissions (Inside Container)
+            sudo docker exec -u root api-app-1 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache /var/www/html/app/certs
+            sudo docker exec -u root api-app-1 chmod -R 755 /var/www/html/app/certs
+            sudo chown ubuntu:ubuntu /home/ubuntu/api/storage/logs/sync_tours.log
+            
+            # 8. Laravel Optimization
+            sudo docker exec api-app-1 php artisan config:cache
+            sudo docker exec api-app-1 php artisan route:cache 
