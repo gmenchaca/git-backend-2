@@ -5,7 +5,7 @@ APP_NAME=Laravel
 APP_KEY=base64:1zF8+MMXmvgGSw5QzH9C3xxJoky4PzKucg3AbntOTO4=
 APP_DEBUG=true
 APP_URL=http://localhost
-APP_URL_FRONT=https://vibeadventures.us
+APP_URL_FRONT=https://vibeadventures.org
 
 STRIPE_SECRET=sk_test_51Ll0SlL1sFOlxHWWCPqAKdMXnFb9ZdBNm1arMMoKEQ9dgxUkiTfVH7C97or4VcziWtKDTICsV3FFTCl6SS7khK8v00Tn4lEZKb
 
