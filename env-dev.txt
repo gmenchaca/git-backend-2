@@ -1,5 +1,7 @@
-APP_NAME=Laravel
 APP_ENV=local
+SERVER_NAME=vibeadventures.net www.vibeadventures.net
+MYSQL_ATTR_SSL_CA=
+APP_NAME=Laravel
 APP_KEY=base64:1zF8+MMXmvgGSw5QzH9C3xxJoky4PzKucg3AbntOTO4=
 APP_DEBUG=true
 APP_URL=http://localhost

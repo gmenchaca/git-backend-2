@@ -1,5 +1,7 @@
+APP_ENV=production
+SERVER_NAME=vibeadventures.be www.vibeadventures.be
+MYSQL_ATTR_SSL_CA="/var/www/html/app/certs/global-bundle.pem"
 APP_NAME=Laravel
-APP_ENV=local
 APP_KEY=base64:1zF8+MMXmvgGSw5QzH9C3xxJoky4PzKucg3AbntOTO4=
 APP_DEBUG=true
 APP_URL=http://localhost
@@ -17,7 +19,6 @@ DB_PORT=3306
 DB_DATABASE=vibe_adventure
 DB_USERNAME=admin
 DB_PASSWORD=Adventures4ever
-MYSQL_ATTR_SSL_CA="/var/www/html/storage/app/certs/global-bundle.pem"
 
 BROADCAST_DRIVER=log
 CACHE_DRIVER=file

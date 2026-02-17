@@ -27,7 +27,6 @@ jobs:
             # 2. Recreate directory and set host ownership
             sudo rm -rf /home/ubuntu/api
             mkdir -p /home/ubuntu/api
-            # FIX: Ensure the ubuntu user owns the base directory before cloning
             sudo chown -R ubuntu:ubuntu /home/ubuntu/api
             cd /home/ubuntu/api
 
@@ -36,16 +35,26 @@ jobs:
             
             # 4. Setup Environment and Files
             echo "${{ secrets.DOT_ENV_MAIN }}" > .env
+            
+            # DYNAMIC FIX: Create the memory config file needed by docker-compose
+            echo "memory_limit=1G" > php-memory.ini 
+
+            # Create storage subfolders so permissions can be applied correctly
+            mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache
+            mkdir -p storage/logs bootstrap/cache app/certs
+            
             touch storage/logs/sync_tours.log
             touch storage/logs/laravel.log
 
             # 5. Start Containers
+            # Docker will now find php-memory.ini and default.conf.template ready
             sudo docker compose up -d --build --wait
 
             # 6. Post-Build Setup
             sudo docker exec api-app-1 composer install --no-dev --no-interaction --optimize-autoloader
             
             # 7. Permissions (Inside Container)
+            # Ensure the web server can write to storage and cache
             sudo docker exec -u root api-app-1 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache 
             
             # 8. Laravel Optimization

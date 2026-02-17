@@ -4,20 +4,22 @@ services:
     build:
       context: .
       dockerfile: Dockerfile-app
+    container_name: api-app-1  # Forces the name so GitHub Actions always find it
     volumes:
-      - .:/var/www/html  # This shares your code with the PHP container
+      - .:/var/www/html
+      - ./php-memory.ini:/usr/local/etc/php/conf.d/memory-limit.ini # MOVED HERE
     networks:
       - app-network
     env_file:
       - .env
 
   nginx:
-    build:
-      context: .
-      dockerfile: Dockerfile-serve
+    image: nginx:alpine # You don't need a custom Dockerfile if you just use templates
+    environment:
+      - SERVER_NAME=${SERVER_NAME}
     volumes:
-      - .:/var/www/html  # This shares the SAME code with the Nginx container
-      - ./php-memory.ini:/usr/local/etc/php/conf.d/memory-limit.ini # Injects the 1GB limit
+      - .:/var/www/html:ro # Mount as Read-Only for security
+      - ./default.conf.template:/etc/nginx/templates/default.conf.template:ro
     ports:
       - "80:80"
     depends_on:
