@@ -36,10 +36,10 @@ REDIS_PORT=6379
 MAIL_MAILER=smtp
 MAIL_HOST=smtp.zoho.com
 MAIL_PORT=465
-MAIL_USERNAME=bookings@vibeadventures.com
-MAIL_PASSWORD=5.hloLubeedvfv5#
+MAIL_USERNAME=bookings@vibeadventures.mx
+MAIL_PASSWORD=Gustavo119977
 MAIL_ENCRYPTION=ssl
-MAIL_FROM_ADDRESS=bookings@vibeadventures.com
+MAIL_FROM_ADDRESS=bookings@vibeadventures.mx
 MAIL_FROM_NAME=VibeAdventures
 
 MIX_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
