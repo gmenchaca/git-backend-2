@@ -66,8 +66,8 @@ class TourSyncService
     private function getAccessToken()
     {
         try {
-            $clientId = "2gmdq5q758vtiwxxwxgwse5whv";
-            $clientSecret = "cz3p1gnwatvepzdrpw7b68uyxizte2noabkslo1ue5gkm3lmu97";
+            $clientId = "k6mh54llx4v6hf58toqtvv71vp";
+            $clientSecret = "7ya951n89pgegh77j5kohubv90j3684kxoxi8q1zbl0oyhsskt5";
 
             $response = Http::withHeaders([
                 'Accept-Language' => 'en',

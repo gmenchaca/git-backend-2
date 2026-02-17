@@ -17,6 +17,7 @@ services:
       dockerfile: Dockerfile-serve
     volumes:
       - .:/var/www/html  # This shares the SAME code with the Nginx container
+      - ./php-memory.ini:/usr/local/etc/php/conf.d/memory-limit.ini # Injects the 1GB limit
     ports:
       - "80:80"
     depends_on:

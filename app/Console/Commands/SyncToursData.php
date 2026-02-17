@@ -20,6 +20,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Http\Request;
 use App\Http\Controllers\ProxyTourRadarController;
 use App\Models\Departure;
+use Illuminate\Support\Facades\DB;
 
 class SyncToursData extends Command
 {
@@ -35,6 +36,7 @@ class SyncToursData extends Command
 
     public function handle()
     {
+        DB::disableQueryLog();
         $this->token = $this->asyncGetAccessToken();
 
         $raw = $this->argument('pages') ?? $this->option('pages') ?? null;
@@ -125,6 +127,7 @@ class SyncToursData extends Command
                         Log::error('sync:tours - save error', ['page' => $currentPage, 'exception' => $e, 'tour' => $tourData]);
                         // continue to next tour
                     }
+                    unset($tourData);
                 }
                 $this->info("Synced data for page {$currentPage}");
             } else {
@@ -186,8 +189,8 @@ class SyncToursData extends Command
     private function asyncGetAccessToken()
     {
         try {
-            $clientId = "2gmdq5q758vtiwxxwxgwse5whv";
-            $clientSecret = "cz3p1gnwatvepzdrpw7b68uyxizte2noabkslo1ue5gkm3lmu97";
+            $clientId = "k6mh54llx4v6hf58toqtvv71vp";
+            $clientSecret = "7ya951n89pgegh77j5kohubv90j3684kxoxi8q1zbl0oyhsskt5";
 
             $response = Http::withHeaders([
 				'Accept-Language' => 'en',
