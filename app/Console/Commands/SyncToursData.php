@@ -195,7 +195,7 @@ class SyncToursData extends Command
                 'Authorization' => 'Basic ' . base64_encode("$clientId:$clientSecret"),
             ])
                 ->asForm()
-                ->post('https://oauth.api.sandbox.b2b.tourradar.com/oauth2/token', [
+                ->post('https://oauth.api.b2b.tourradar.com/oauth2/token', [
                     'grant_type' => 'client_credentials',
                     'scope' => 'com.tourradar.tours/read',
                 ]);
@@ -213,7 +213,7 @@ class SyncToursData extends Command
     {
         try {
             $response = Http::withToken($this->token)
-                ->get('https://api.sandbox.b2b.tourradar.com/v1/tours/search', [
+                ->get('https://api.b2b.tourradar.com/v1/tours/search', [
                     'sort_order' => 'asc',
                     'limit' => 10,
                     'sort_by' => 'price',
@@ -256,7 +256,7 @@ class SyncToursData extends Command
             $dateRangeEnd   = Carbon::now()->addDays(91)->format('Ymd');
         }
 
-        $url = "https://api.sandbox.b2b.tourradar.com/v1/tours/{$tourId}/departures?date_range={$dateRangeStart}-{$dateRangeEnd}&user_country=185&currency=USD";
+        $url = "https://api.b2b.tourradar.com/v1/tours/{$tourId}/departures?date_range={$dateRangeStart}-{$dateRangeEnd}&user_country=185&currency=USD";
         Log::info("Departures url {$url}");
         $this->info("Departures url {$url}");
 
@@ -287,7 +287,7 @@ class SyncToursData extends Command
             'Authorization' => 'Bearer ' . $accessToken,
         ];
     
-        $url = "https://api.sandbox.b2b.tourradar.com/v1/tours/{$tourId}/departures/{$departureId}";
+        $url = "https://api.b2b.tourradar.com/v1/tours/{$tourId}/departures/{$departureId}";
         Log::info("Departure detail url {$url}");
         $this->info("Departure detail url {$url}");
     
@@ -349,7 +349,7 @@ class SyncToursData extends Command
     public static function getPriceCategoriesByTour($tourId)
     {
         $accessToken = self::getAccessToken();
-        $url = "https://api.sandbox.b2b.tourradar.com/v1/tours/{$tourId}/prices";
+        $url = "https://api.b2b.tourradar.com/v1/tours/{$tourId}/prices";
         $headers = [
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $accessToken,

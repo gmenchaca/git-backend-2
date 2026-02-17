@@ -96,7 +96,7 @@ class OperatorsController extends Controller
     public function import(){
         $scope = 'com.tourradar.operators/read';
         $accessToken =TourRadarController::getAccessToken($scope) ;
-        $url = "https://api.sandbox.b2b.tourradar.com/v1/operators";
+        $url = "https://api.b2b.tourradar.com/v1/operators";
         $headers = [
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $accessToken,
@@ -133,7 +133,7 @@ class OperatorsController extends Controller
         try{
             $scope = 'com.tourradar.operators/read';
             $accessToken =TourRadarController::getAccessToken($scope) ;
-            $url = "https://api.sandbox.b2b.tourradar.com/v1/operators/{$r->operator_id}";
+            $url = "https://api.b2b.tourradar.com/v1/operators/{$r->operator_id}";
             $headers = [
                 'Accept' => 'application/json',
                 'Authorization' => 'Bearer ' . $accessToken,

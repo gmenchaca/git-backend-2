@@ -75,7 +75,7 @@ class TourSyncService
                 'Authorization' => 'Basic ' . base64_encode("$clientId:$clientSecret"),
             ])
                 ->asForm()
-                ->post('https://oauth.api.sandbox.b2b.tourradar.com/oauth2/token', [
+                ->post('https://oauth.api.b2b.tourradar.com/oauth2/token', [
                     'grant_type' => 'client_credentials',
                     'scope' => 'com.tourradar.tours/read',
                 ]);
@@ -90,7 +90,7 @@ class TourSyncService
     private function fetchDataFromApi($currentPage)
     {
         $response = Http::withToken($this->token)
-            ->get('https://api.sandbox.b2b.tourradar.com/v1/tours/search', [
+            ->get('https://api.b2b.tourradar.com/v1/tours/search', [
                 'sort_order' => 'asc',
                 'limit' => 10,
                 'sort_by' => 'price',
@@ -237,7 +237,7 @@ class TourSyncService
         $start = $this->dateRangeStart ?: Carbon::now()->addDays(1)->format('Ymd');
         $end = $this->dateRangeEnd ?: Carbon::now()->addDays(91)->format('Ymd');
 
-        $url = "https://api.sandbox.b2b.tourradar.com/v1/tours/{$tourId}/departures?date_range={$start}-{$end}&user_country=185&currency=USD";
+        $url = "https://api.b2b.tourradar.com/v1/tours/{$tourId}/departures?date_range={$start}-{$end}&user_country=185&currency=USD";
         
         try {
             $response = Http::withToken($this->token)->get($url);
@@ -251,7 +251,7 @@ class TourSyncService
     private function getDeparture($tourId, $departureId)
     {
         usleep(1000000);
-        $url = "https://api.sandbox.b2b.tourradar.com/v1/tours/{$tourId}/departures/{$departureId}";
+        $url = "https://api.b2b.tourradar.com/v1/tours/{$tourId}/departures/{$departureId}";
     
         try {
             $response = Http::withToken($this->token)->get($url);

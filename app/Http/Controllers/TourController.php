@@ -136,7 +136,7 @@ class TourController extends Controller
     {
         $scope = "com.tourradar.bookings/read";
         $accessToken = TourRadarController::getAccessToken($scope);
-        $url = "https://api.sandbox.b2b.tourradar.com/v1/operators/{$r->operatorId}";
+        $url = "https://api.b2b.tourradar.com/v1/operators/{$r->operatorId}";
         $headers = [
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $accessToken,

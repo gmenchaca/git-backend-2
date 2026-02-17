@@ -25,7 +25,7 @@ class TourRadarController extends Controller
 
         $clientId = env('TOURRADAR_CLIENT_ID', 'hpg0tvme3ujrwcnd6fcyttwst8');
         $clientSecret = env('TOURRADAR_CLIENT_SECRET', 'mjjqpzhg19rifw174ehlw1a56nufbvwxrcya2w4bz32dsbjf594');
-        $urlToken = 'https://oauth.api.sandbox.b2b.tourradar.com/oauth2/token';
+        $urlToken = 'https://oauth.api.b2b.tourradar.com/oauth2/token';
         $authorization = base64_encode($clientId . ':' . $clientSecret);
         $headers = [
             'Content-Type' => 'application/x-www-form-urlencoded',
@@ -66,7 +66,7 @@ public static function getDeparturesByTour($params)
             'Authorization' => 'Bearer ' . $accessToken,
         ];
         $tourId = $params['tourId'];
-        $url = "https://api.sandbox.b2b.tourradar.com/v1/tours/{$tourId}/departures?";
+        $url = "https://api.b2b.tourradar.com/v1/tours/{$tourId}/departures?";
 
         if (isset($params['currency'])) {
             $url .= "currency=" . $params['currency'] . "&";
@@ -282,7 +282,7 @@ public static function getDeparturesByTour($params)
             $queryParams['travelers'] = $params['travelers'];
         }
 
-        $url = "https://api.sandbox.b2b.tourradar.com/v1/tours/{$params['tourId']}/departures";
+        $url = "https://api.b2b.tourradar.com/v1/tours/{$params['tourId']}/departures";
 
 
         try {
@@ -636,7 +636,7 @@ public static function getDeparturesByTour($params)
         ];
         $tourId = $params['tourId'];
         $departureId = $params['departureId'];
-        $url = "https://api.sandbox.b2b.tourradar.com/v1/tours/{$tourId}/departures/{$departureId}";
+        $url = "https://api.b2b.tourradar.com/v1/tours/{$tourId}/departures/{$departureId}";
 
         try {
             // First, get the departure information
@@ -649,7 +649,7 @@ public static function getDeparturesByTour($params)
                 foreach ($departureData['prices']['accommodations'] as &$accommodation) {
                     if (!empty($accommodation['price_tiers'])) {
                         // Make an API call to fetch the prices information
-                        $priceUrl = "https://api.sandbox.b2b.tourradar.com/v1/tours/{$tourId}/prices";
+                        $priceUrl = "https://api.b2b.tourradar.com/v1/tours/{$tourId}/prices";
                         $priceResponse = Http::withHeaders($headers)->get($priceUrl);
                         $priceData = $priceResponse->json();
 
@@ -692,7 +692,7 @@ public static function getDeparturesByTour($params)
         return self::taxonomyLanguages();
 
         $token = self::getAccessToken();
-        $url = "https://api.sandbox.b2b.tourradar.com/v1/taxonomy/languages";
+        $url = "https://api.b2b.tourradar.com/v1/taxonomy/languages";
         $headers = [
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $token,
@@ -710,7 +710,7 @@ public static function getDeparturesByTour($params)
             'Authorization' => 'Bearer ' . $token,
         ];
 
-        $url = "https://api.sandbox.b2b.tourradar.com/v1/taxonomy/destinations/" . $params['type'] . "?";
+        $url = "https://api.b2b.tourradar.com/v1/taxonomy/destinations/" . $params['type'] . "?";
 
         if (isset($params['country_id'])) {
             $url .= "country_id=" . $params['country_id'] . "&";
@@ -782,7 +782,7 @@ public static function getDeparturesByTour($params)
     public static function getTour($tourId, $currency = 'USD', $user_country = '185')
     {
         $accessToken = self::getAccessToken();
-        $url = "https://api.sandbox.b2b.tourradar.com/v1/tours/{$tourId}?currency={$currency}&user_country={$user_country}";
+        $url = "https://api.b2b.tourradar.com/v1/tours/{$tourId}?currency={$currency}&user_country={$user_country}";
         $headers = [
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $accessToken,
@@ -799,7 +799,7 @@ public static function getDeparturesByTour($params)
     public static function getPriceCategoriesByTour($tourId)
     {
         $accessToken = self::getAccessToken();
-        $url = "https://api.sandbox.b2b.tourradar.com/v1/tours/{$tourId}/prices";
+        $url = "https://api.b2b.tourradar.com/v1/tours/{$tourId}/prices";
         $headers = [
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $accessToken,
@@ -835,7 +835,7 @@ public static function getDeparturesByTour($params)
     {
         $scope = "com.tourradar.operators/read";
         $accessToken = self::getAccessToken($scope);
-        $url = "https://api.sandbox.b2b.tourradar.com/v1/operators/{$operatorId}/booking-fields";
+        $url = "https://api.b2b.tourradar.com/v1/operators/{$operatorId}/booking-fields";
         $headers = [
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $accessToken,
@@ -853,7 +853,7 @@ public static function getDeparturesByTour($params)
     {
         $scope = "com.tourradar.bookings/read";
         $accessToken = self::getAccessToken($scope);
-        $url = "https://api.sandbox.b2b.tourradar.com/v1/bookings";
+        $url = "https://api.b2b.tourradar.com/v1/bookings";
         $headers = [
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $accessToken,
@@ -890,7 +890,7 @@ public static function getDeparturesByTour($params)
     {
         $scope = "com.tourradar.bookings/read";
         $accessToken = self::getAccessToken($scope);
-        $url = "https://api.sandbox.b2b.tourradar.com/v1/bookings/{$id}/status";
+        $url = "https://api.b2b.tourradar.com/v1/bookings/{$id}/status";
         $headers = [
             'Accept' => 'application/json',
             'Authorization' => 'Bearer ' . $accessToken,
