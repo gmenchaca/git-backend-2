@@ -1,5 +1,5 @@
 APP_ENV=production
-SERVER_NAME=vibeadventures.be www.vibeadventures.be
+SERVER_NAME="vibeadventures.be www.vibeadventures.be"
 MYSQL_ATTR_SSL_CA="/var/www/html/app/certs/global-bundle.pem"
 APP_NAME=Laravel
 APP_KEY=base64:1zF8+MMXmvgGSw5QzH9C3xxJoky4PzKucg3AbntOTO4=
