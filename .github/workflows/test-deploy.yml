@@ -16,7 +16,7 @@ jobs:
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ubuntu
-          key: ${{ secrets.SSH_PRIVATE_KEY_MAIN }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             # 1. Enter the directory if it exists and STOP containers
             if [ -d "/home/ubuntu/api" ]; then
@@ -31,7 +31,7 @@ jobs:
             cd /home/ubuntu/api
 
             # 3. Fresh Clone 
-            git clone -b main https://github.com/gmenchaca/git-backend-2.git .
+            git clone -b dev https://github.com/gmenchaca/git-backend-2.git .
             
             # 4. Setup Environment and Files
             echo "${{ secrets.DOT_ENV_DEV}}" > .env
