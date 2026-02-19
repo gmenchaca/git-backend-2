@@ -18,45 +18,37 @@ jobs:
           username: ubuntu
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            # 1. Enter the directory if it exists and STOP containers
-            if [ -d "/home/ubuntu/api" ]; then
-              cd /home/ubuntu/api
+            # 1. Enter Directory and perform "Pre-flight" cleanup
+            mkdir -p /home/ubuntu/api
+            cd /home/ubuntu/api
+            
+            # Clean up old Docker data to prevent disk from filling up again
+            sudo docker system prune -f
+            
+            if [ -d ".git" ]; then
               sudo docker compose down || true
+              git fetch origin dev
+              git reset --hard origin/dev
+            else
+              git clone -b dev https://github.com/gmenchaca/git-backend-2.git .
             fi
 
-            # 2. Recreate directory and set host ownership
-            sudo rm -rf /home/ubuntu/api
-            mkdir -p /home/ubuntu/api
-            sudo chown -R ubuntu:ubuntu /home/ubuntu/api
-            cd /home/ubuntu/api
-
-            # 3. Fresh Clone 
-            git clone -b dev https://github.com/gmenchaca/git-backend-2.git .
-            
-            # 4. Setup Environment and Files
-            echo "${{ secrets.DOT_ENV_DEV}}" > .env
-            
-            # DYNAMIC FIX: Create the memory config file needed by docker-compose
+            # 2. Setup Environment and Required Files
+            echo "${{ secrets.DOT_ENV_DEV }}" > .env
             echo "memory_limit=1G" > php-memory.ini 
-
-            # Create storage subfolders so permissions can be applied correctly
-            mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache
-            mkdir -p storage/logs bootstrap/cache app/certs
             
-            touch storage/logs/sync_tours.log
+            # Ensure Laravel structure exists
+            mkdir -p storage/framework/sessions storage/framework/views storage/framework/cache storage/logs bootstrap/cache
             touch storage/logs/laravel.log
 
-            # 5. Start Containers
-            # Docker will now find php-memory.ini and default.conf.template ready
+            # 3. Build and Start
             sudo docker compose up -d --build --wait
 
-            # 6. Post-Build Setup
+            # 4. Post-Build Setup
+            # This will now be much faster with your new composer.json extra configuration
             sudo docker exec api-app-1 composer install --no-dev --no-interaction --optimize-autoloader
             
-            # 7. Permissions (Inside Container)
-            # Ensure the web server can write to storage and cache
+            # 5. Finalize Permissions and Cache
             sudo docker exec -u root api-app-1 chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache 
-            
-            # 8. Laravel Optimization
             sudo docker exec api-app-1 php artisan config:cache
             sudo docker exec api-app-1 php artisan route:cache
